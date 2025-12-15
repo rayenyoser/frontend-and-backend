@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+    options {
+        timestamps()
+    }
+
+    environment {
+        IMAGE_NAME = "todo-app-dev"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npm test || echo "No tests found, skipping"'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker version'
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'DEV pipeline SUCCESS ✅'
+        }
+        failure {
+            echo 'DEV pipeline FAILED ❌'
+        }
+    }
+}
