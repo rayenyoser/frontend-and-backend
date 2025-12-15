@@ -54,4 +54,10 @@ pipeline {
 
     post {
         success {
-            echo 'Bu
+            echo 'Build + Test + Push OK'
+        }
+        failure {
+            echo 'Build / Test / Push FAILED'
+        }
+    }
+}
