@@ -5,49 +5,35 @@ pipeline {
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
-
-    options {
-        timestamps()
-    }
-
     environment {
-        IMAGE_NAME = "todo-app-dev"
+        IMAGE = 'rayenyoser/todo-app'
+        TAG = "dev-${env.BUILD_NUMBER}"
     }
-
     stages {
-
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
-
         stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
+            steps { sh 'npm install' }
         }
-
         stage('Run Tests') {
-            steps {
-                sh 'npm test || echo "No tests found, skipping"'
-            }
+            steps { sh 'npm test || true' } // skip if no tests yet
         }
-
         stage('Docker Build') {
+            steps { sh "docker build -t $IMAGE:$TAG ." }
+        }
+        stage('Push Docker Image') {
             steps {
-                sh 'docker version'
-                sh 'docker build -t $IMAGE_NAME .'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh "echo $PASS | docker login -u $USER --password-stdin"
+                    sh "docker push $IMAGE:$TAG"
+                }
             }
         }
     }
-
     post {
-        success {
-            echo 'DEV pipeline SUCCESS ✅'
-        }
-        failure {
-            echo 'DEV pipeline FAILED ❌'
-        }
+        success { echo 'DEV pipeline SUCCESS ✅' }
+        failure { echo 'DEV pipeline FAILED ❌' }
     }
 }
