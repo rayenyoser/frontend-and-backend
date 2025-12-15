@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'node:18-alpine' } }
+    agent any
     environment {
         DOCKER_IMAGE = "todo-app"
     }
@@ -14,15 +14,17 @@ pipeline {
                 sh 'npm run install:frontend'
             }
         }
-        stage('Tests') {
+        stage('Run Tests') {
             steps { sh 'npm test || true' }
         }
-        stage('Build Docker image') {
-            steps { sh "docker build -t $DOCKER_IMAGE ." }
+        stage('Build Docker Image (Manual)') {
+            steps {
+                echo 'Docker build should be run manually on Windows CMD'
+            }
         }
     }
     post {
-        success { echo "Pipeline completed successfully ✅" }
-        failure { echo "Pipeline failed ❌" }
+        success { echo 'Pipeline completed successfully ✅' }
+        failure { echo 'Pipeline failed ❌' }
     }
 }
